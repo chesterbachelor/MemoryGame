@@ -5,16 +5,31 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class MemoryGame {
-    public static void main(String[] args) {
+    Painter painter = new Painter();
+    GameEngine engine;
+    List<String> dictionary;
 
-        FileHandler fileHandler = new FileHandler();
-        List<String> dictionary = fileHandler.loadWords("src/main/resources/Words.txt");
+    public MemoryGame(List<String> dictionary) {
+        this.dictionary = dictionary;
+    }
 
-        playGame(dictionary);
+    public void playGame() {
+        painter.paintStartingMessage();
+
+        while (true) {
+            painter.paintChooseLevel();
+            engine = chooseLevel(dictionary);
+            gameLoop();
+
+            if (!doYouWantToRetry()) {
+                painter.paintGoodbyeMessage();
+                return;
+            }
+        }
 
     }
 
-    private static GameEngine chooseLevel(List<String> dictionary) {
+    private GameEngine chooseLevel(List<String> dictionary) {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String level = scanner.nextLine().toLowerCase().trim();
@@ -25,15 +40,16 @@ public class MemoryGame {
                 case "hard":
                     return new GameEngine(8, 15, dictionary);
                 default:
-                    System.out.println("UNEXPECTED TOKEN");
+                    painter.paintInvalidChoice();
             }
         }
     }
 
-    private static boolean doYouWantToRetry() {
+    private boolean doYouWantToRetry() {
         var scanner = new Scanner(System.in);
 
         while (true) {
+            painter.paintTryAgainMessage();
             String retryChoice = scanner.nextLine().trim().toLowerCase();
 
             switch (retryChoice) {
@@ -42,93 +58,71 @@ public class MemoryGame {
                 case "no":
                     return false;
                 default:
-                    System.out.println("Unknown answer, type again");
+                    painter.paintInvalidChoice();
             }
-
         }
     }
 
-    private static void playGame(List<String> dictionary) {
-        Painter painter = new Painter();
-        System.out.println("Hello !!!!");
-        System.out.println("Welcome to Memory Game");
-
-        while (true) {
-            painter.paintStartingMessage();
-            GameEngine engine = chooseLevel(dictionary);
-            gameLoop(engine, painter);
-            System.out.println("Do you want to try again ? ");
-            System.out.println("Yes    /    No");
-
-            if (!doYouWantToRetry()) {
-                painter.paintGoodbyeMessage();
-                return;
-            }
-        }
-
-    }
-
-    private static void gameLoop(GameEngine engine, Painter painter) {
-
-        int numOfGuesses = 0;
+    private void gameLoop() {
         while (!engine.isGameOver()) {
-            if (numOfGuesses > engine.getNumOfTries()) {
+
+            if (engine.isNumberOfGuessesExceeded()) {
                 painter.paintGameLost();
                 return;
             }
 
-            clearScreen();
             painter.paintBoard(engine.getWords(), engine.getShuffledWords());
+            guessWordsLocations();
 
-            System.out.println("Choose word to flip");
-            String userChoice = getUserChoice(engine.getNumOfWords());
-            while(!engine.peek(userChoice)) {
-                System.out.println("Wrong choice. Choose again");
-                userChoice = getUserChoice(engine.getNumOfWords());
-            }
-
-            clearScreen();
-            painter.paintBoard(engine.getWords(), engine.getShuffledWords());
-
-            System.out.println("Choose second word to flip");
-            userChoice = getUserChoice(engine.getNumOfWords());
-            while(!engine.peek(userChoice)) {
-                System.out.println("Wrong choice. Choose again");
-                userChoice = getUserChoice(engine.getNumOfWords());
-            }
-
-            clearScreen();
-            painter.paintBoard(engine.getWords(), engine.getShuffledWords());
-
-            engine.compareWords();
-            numOfGuesses++;
-
+            engine.uncoverWordsIfGuessed();
+            engine.endRound();
         }
         painter.printGameWon();
     }
 
-    public static void clearScreen() {
-        for (int i = 0; i < 40; i++)
-            System.out.println();
-    }
+    private void guessWordsLocations() {
+        while (!(engine.secondRowChosen && engine.firstRowChosen)) {
+            painter.paintWordToFlip();
 
-    private static String getUserChoice(int maxNumber) {
-        Scanner scanner = new Scanner(System.in);
-        String userChoice = scanner.nextLine().trim().toLowerCase();
-
-        while (!validateUserChoice(userChoice, maxNumber)){
-            System.out.println("Enter correct postion");
-            userChoice = scanner.nextLine().trim().toLowerCase();
+            while (!engine.peek(getUserChoice())) {
+                painter.paintInvalidChoice();
+            }
+            painter.paintBoard(engine.getWords(), engine.getShuffledWords());
         }
-        return userChoice;
     }
 
-    private static boolean validateUserChoice(String userChoice, int maxNumber) {
+    private String getUserChoice() {
+        Scanner scanner = new Scanner(System.in);
 
-        Pattern pattern = Pattern.compile("[a-b][1-" + maxNumber + "]");
+        while (true) {
+            String userChoice = scanner.nextLine().trim().toLowerCase();
+            if (!validateUserChoicePattern(userChoice)) {
+                painter.paintInvalidChoice();
+                continue;
+            }
+            if (!validateRowChoice(userChoice.charAt(0))) {
+                painter.paintInvalidRowChoice();
+                continue;
+            }
+            return userChoice;
+        }
+    }
+
+    private boolean validateUserChoicePattern(String userChoice) {
+
+        Pattern pattern = Pattern.compile("[a-b][1-" + engine.getNumOfWords() + "]");
 
         return pattern.matcher(userChoice).matches();
     }
 
+    private boolean validateRowChoice(char row) {
+        if (row == 'a' && engine.firstRowChosen) {
+            return false;
+        }
+        if (row == 'b' && engine.secondRowChosen) {
+            return false;
+        }
+        return true;
+    }
 
 }

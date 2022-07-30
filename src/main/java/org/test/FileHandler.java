@@ -16,7 +16,7 @@ public class FileHandler {
             return lines.collect(Collectors.toList());
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
         return null;
     }
