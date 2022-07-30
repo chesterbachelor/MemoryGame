@@ -22,7 +22,10 @@ public class GameEngine {
     }
 
     private List<Word> shuffleWords(List<Word> words) {
-        List<Word> shuffle = new ArrayList<>(words);
+        List<Word> shuffle = words.stream()
+                .map(word -> new Word(word.word) )
+                .collect(Collectors.toList());
+
         Collections.shuffle(shuffle);
         return shuffle;
     }
@@ -43,11 +46,12 @@ public class GameEngine {
 
     public boolean peek(String position) {
         char row = position.charAt(0);
-        int column = position.charAt(1);
+        String sub = position.substring(1,2);
+        int column = Integer.parseInt(sub) - 1;
 
-        if (row == 'A')
+        if (row == 'a')
             return peekFirstRow(column);
-        else if (row == 'B')
+        else if (row == 'b')
             return peekSecondRow(column);
 
         return false;
@@ -102,6 +106,12 @@ public class GameEngine {
 
     public List<Word> getShuffledWords() {
         return shuffledWords;
+    }
+    public int getNumOfTries(){
+        return numOfTries;
+    }
+    public int getNumOfWords(){
+        return numOfWords;
     }
 
 }
