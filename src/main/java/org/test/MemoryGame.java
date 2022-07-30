@@ -5,7 +5,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class MemoryGame {
-    Painter painter = new Painter();
+    Printer printer = new Printer();
     GameEngine engine;
     List<String> dictionary;
 
@@ -14,15 +14,15 @@ public class MemoryGame {
     }
 
     public void playGame() {
-        painter.paintStartingMessage();
+        printer.printWelcomeMessage();
 
         while (true) {
-            painter.paintChooseLevel();
+            printer.printChooseLevelMessage();
             engine = chooseLevel(dictionary);
             gameLoop();
 
             if (!doYouWantToRetry()) {
-                painter.paintGoodbyeMessage();
+                printer.printGoodbyeMessage();
                 return;
             }
         }
@@ -40,7 +40,7 @@ public class MemoryGame {
                 case "hard":
                     return new GameEngine(8, 15, dictionary);
                 default:
-                    painter.paintInvalidChoice();
+                    printer.printIncorrectInputMessage();
             }
         }
     }
@@ -49,7 +49,7 @@ public class MemoryGame {
         var scanner = new Scanner(System.in);
 
         while (true) {
-            painter.paintTryAgainMessage();
+            printer.printTryAgainMessage();
             String retryChoice = scanner.nextLine().trim().toLowerCase();
 
             switch (retryChoice) {
@@ -58,7 +58,7 @@ public class MemoryGame {
                 case "no":
                     return false;
                 default:
-                    painter.paintInvalidChoice();
+                    printer.printIncorrectInputMessage();
             }
         }
     }
@@ -67,27 +67,27 @@ public class MemoryGame {
         while (!engine.isGameOver()) {
 
             if (engine.isNumberOfGuessesExceeded()) {
-                painter.paintGameLost();
+                printer.printGameLostMessage();
                 return;
             }
 
-            painter.paintBoard(engine.getWords(), engine.getShuffledWords());
+            printer.printBoard(engine);
             guessWordsLocations();
 
             engine.uncoverWordsIfGuessed();
             engine.endRound();
         }
-        painter.printGameWon();
+        printer.printGameWonMessage();
     }
 
     private void guessWordsLocations() {
         while (!(engine.secondRowChosen && engine.firstRowChosen)) {
-            painter.paintWordToFlip();
+            printer.printWordToFlipMessage();
 
             while (!engine.peek(getUserChoice())) {
-                painter.paintInvalidChoice();
+                printer.printIncorrectInputMessage();
             }
-            painter.paintBoard(engine.getWords(), engine.getShuffledWords());
+            printer.printBoard(engine);
         }
     }
 
@@ -97,11 +97,11 @@ public class MemoryGame {
         while (true) {
             String userChoice = scanner.nextLine().trim().toLowerCase();
             if (!validateUserChoicePattern(userChoice)) {
-                painter.paintInvalidChoice();
+                printer.printIncorrectInputMessage();
                 continue;
             }
             if (!validateRowChoice(userChoice.charAt(0))) {
-                painter.paintInvalidRowChoice();
+                printer.printInvalidRowChoice();
                 continue;
             }
             return userChoice;

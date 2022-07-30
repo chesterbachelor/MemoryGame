@@ -2,71 +2,69 @@ package org.test;
 
 import java.util.List;
 
-public class Painter {
+public class Printer {
 
-    public void paintBoard(List<Word> firstRow, List<Word> secondRow) {
-        clearScreen();
+    public void printBoard(GameEngine engine) {
+        clearConsole();
         System.out.println("***********************");
+        for(int i = 1; i<=engine.getNumOfWords();i++)
+            System.out.print("      " + i);
+        System.out.println();
 
         System.out.print("A: ");
-        firstRow.forEach(this::paintRow);
+        engine.getWords().forEach(this::printWord);
 
         System.out.println();
 
         System.out.print("B: ");
-        secondRow.forEach(this::paintRow);
+        engine.getShuffledWords().forEach(this::printWord);
 
         System.out.println("\n***********************");
     }
 
-    private void paintRow(Word word) {
+    private void printWord(Word word) {
         if (word.state == WordState.COVERED)
-            System.out.print("X ");
+            System.out.print("   X");
         else
-            System.out.print(word.word + " ");
+            System.out.print("   " + word.word);
     }
 
-    public void paintChooseLevel() {
+    public void printChooseLevelMessage() {
         System.out.println("Choose level - EASY/HARD");
-
     }
 
-    public void paintGameLost() {
-        System.out.println("***********************");
+    public void printGameLostMessage() {
         System.out.println("You've lost !!!");
-
     }
 
-    public void printGameWon(){
-        System.out.println("***********************");
+    public void printGameWonMessage(){
         System.out.println("You've won !!!");
-
     }
-    public void paintGoodbyeMessage(){
+    public void printGoodbyeMessage(){
         System.out.println("Thanks for playing!");
     }
-    public void paintStartingMessage(){
+    public void printWelcomeMessage(){
         System.out.println("Hello !!!!");
         System.out.println("Welcome to Memory Game");
     }
 
-    public void paintTryAgainMessage(){
+    public void printTryAgainMessage(){
         System.out.println("Do you want to try again ? ");
         System.out.println("Yes    /    No");
     }
 
-    public void paintInvalidChoice(){
+    public void printIncorrectInputMessage(){
         System.out.println("Incorrect input");
     }
 
-    public void paintWordToFlip(){
-
+    public void printWordToFlipMessage(){
+        System.out.println("Choose word to flip");
     }
-    public void clearScreen(){
+    public void clearConsole(){
         for (int i = 0; i < 2; i++)
             System.out.println();
     }
-    public void paintInvalidRowChoice(){
+    public void printInvalidRowChoice(){
         System.out.println("Row already chosen");
     }
 }
