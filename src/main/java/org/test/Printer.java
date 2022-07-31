@@ -40,9 +40,12 @@ public class Printer {
         System.out.println("You've lost !!!");
     }
 
-    public void printGameWonMessage(){
-        System.out.println("You've won !!!");
+    public void printGameWonMessage(long gameTime, int numOfTriesToFinish){
+        System.out.println("Congratulations !!");
+        System.out.print("You solved the memory game after " + numOfTriesToFinish + " chances. " );
+        System.out.println("It took you " + gameTime + " seconds.");
     }
+
     public void printGoodbyeMessage(){
         System.out.println("Thanks for playing!");
     }
@@ -55,6 +58,12 @@ public class Printer {
         System.out.println("Do you want to try again ? ");
         System.out.println("Yes    /    No");
     }
+    public void printAskUserForNameMessage(){
+        System.out.println("Please enter your name !");
+    }
+    public void printHighScore(List<HighScore> scores){
+        scores.forEach(System.out::println);
+    }
 
     public void printIncorrectInputMessage(){
         System.out.println("Incorrect input");
@@ -63,11 +72,12 @@ public class Printer {
     public void printWordToFlipMessage(){
         System.out.println("Choose word to flip");
     }
+
+    public void printInvalidRowChoice(){
+        System.out.println("Row already chosen");
+    }
     public void clearConsole(){
         for (int i = 0; i < 2; i++)
             System.out.println();
-    }
-    public void printInvalidRowChoice(){
-        System.out.println("Row already chosen");
     }
 }

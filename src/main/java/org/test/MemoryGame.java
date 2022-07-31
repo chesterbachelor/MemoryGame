@@ -1,8 +1,10 @@
 package org.test;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MemoryGame {
     Printer printer = new Printer();
@@ -19,6 +21,7 @@ public class MemoryGame {
         while (true) {
             printer.printChooseLevelMessage();
             engine = chooseLevel(dictionary);
+            engine.startTimer();
             gameLoop();
 
             if (!doYouWantToRetry()) {
@@ -77,7 +80,50 @@ public class MemoryGame {
             engine.uncoverWordsIfGuessed();
             engine.endRound();
         }
-        printer.printGameWonMessage();
+        engine.endTimer();
+        printer.printGameWonMessage(engine.getGameTime(),engine.getNumOfTriesToFinishGame());
+        HighScore newScore = createNewScore();
+        FileHandler fileHandler = new FileHandler();
+        List<HighScore> highScores = loadHighScores(fileHandler);
+
+        highScores.add(newScore);
+        List<HighScore> updatedHighScores = highScores.stream()
+                .sorted()
+                .limit(10)
+                .collect(Collectors.toList());
+
+        printer.printHighScore(updatedHighScores);
+        saveHighScores(fileHandler,updatedHighScores);
+
+    }
+
+    private HighScore createNewScore(){
+        printer.printAskUserForNameMessage();
+        Scanner scanner = new Scanner(System.in);
+        String userName = scanner.nextLine().trim();
+        return new HighScore(userName, LocalDate.now(), engine.getGameTime(),engine.getNumOfTriesToFinishGame());
+    }
+    private List<HighScore> loadHighScores(FileHandler fileHandler){
+
+        String filePath;
+        if(engine.getLevel().equalsIgnoreCase("easy")) {
+            filePath = "src/main/resources/HighScoresEasy.txt";
+        }
+        else {
+            filePath = "src/main/resources/HighScoresHard.txt";
+        }
+        return fileHandler.loadHighScores(filePath);
+    }
+    private void saveHighScores(FileHandler fileHandler, List<HighScore> highScores){
+        String filePath;
+        if(engine.getLevel().equalsIgnoreCase("easy")) {
+            filePath = "src/main/resources/HighScoresEasy.txt";
+        }
+        else {
+            filePath = "src/main/resources/HighScoresHard.txt";
+        }
+        fileHandler.saveHighScores(filePath,highScores);
+
     }
 
     private void guessWordsLocations() {

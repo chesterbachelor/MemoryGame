@@ -1,11 +1,14 @@
 package org.test;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameEngine {
     private final int numOfWords;
     private int numOfTriesRemaining;
+    private final int numOfTries;
     private final String level;
     private final List<Word> words;
     private final List<Word> shuffledWords;
@@ -13,11 +16,15 @@ public class GameEngine {
     Word peekedWordFromSecondRow;
     public boolean firstRowChosen = false;
     public boolean secondRowChosen = false;
+    Instant start;
+    Instant end;
 
-    public GameEngine(int numOfWords, int numOfTries, List<String> dictionary,String level) {
+
+    public GameEngine(int numOfWords, int numOfTries, List<String> dictionary, String level) {
         this.numOfWords = numOfWords;
         this.level = level;
         numOfTriesRemaining = numOfTries;
+        this.numOfTries = numOfTries;
         words = chooseRandomWords(dictionary, numOfWords);
         shuffledWords = shuffleWords(words);
     }
@@ -105,6 +112,22 @@ public class GameEngine {
         return numOfTriesRemaining <= 0;
     }
 
+    public void startTimer() {
+        start = Instant.now();
+    }
+
+    public void endTimer() {
+        end = Instant.now();
+    }
+
+    public long getGameTime() {
+        return Duration.between(start,end).toSeconds();
+    }
+
+    public int getNumOfTriesToFinishGame() {
+        return numOfTries - numOfTriesRemaining;
+    }
+
     public List<Word> getWords() {
         return words;
     }
@@ -120,7 +143,8 @@ public class GameEngine {
     public int getNumOfTriesRemaining() {
         return numOfTriesRemaining;
     }
-    public String getLevel(){
+
+    public String getLevel() {
         return level;
     }
 
