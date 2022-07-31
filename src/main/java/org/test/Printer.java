@@ -7,6 +7,8 @@ public class Printer {
     public void printBoard(GameEngine engine) {
         clearConsole();
         System.out.println("***********************");
+        System.out.println("Level: " + engine.getLevel());
+        System.out.println("Guess chances remaining: " + engine.getNumOfTriesRemaining());
         for(int i = 1; i<=engine.getNumOfWords();i++)
             System.out.print("      " + i);
         System.out.println();
@@ -34,6 +36,7 @@ public class Printer {
     }
 
     public void printGameLostMessage() {
+        System.out.println("0 guess chances remaining");
         System.out.println("You've lost !!!");
     }
 

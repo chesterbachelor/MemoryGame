@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 public class GameEngine {
     private final int numOfWords;
-    private final int numOfTries;
-    public int numOfGuesses = 0;
+    private int numOfTriesRemaining;
+    private final String level;
     private final List<Word> words;
     private final List<Word> shuffledWords;
     Word peekedWordFromFirstRow;
@@ -14,16 +14,17 @@ public class GameEngine {
     public boolean firstRowChosen = false;
     public boolean secondRowChosen = false;
 
-    public GameEngine(int numOfWords, int numOfTries, List<String> dictionary) {
+    public GameEngine(int numOfWords, int numOfTries, List<String> dictionary,String level) {
         this.numOfWords = numOfWords;
-        this.numOfTries = numOfTries;
+        this.level = level;
+        numOfTriesRemaining = numOfTries;
         words = chooseRandomWords(dictionary, numOfWords);
         shuffledWords = shuffleWords(words);
     }
 
     private List<Word> shuffleWords(List<Word> words) {
         List<Word> shuffledList = words.stream()
-                .map(word -> new Word(word.word) )
+                .map(word -> new Word(word.word))
                 .collect(Collectors.toList());
 
         Collections.shuffle(shuffledList);
@@ -45,7 +46,7 @@ public class GameEngine {
 
     public boolean peek(String position) {
         char row = position.charAt(0);
-        String sub = position.substring(1,2);
+        String sub = position.substring(1, 2);
         int column = Integer.parseInt(sub) - 1;
 
         if (row == 'a')
@@ -66,6 +67,7 @@ public class GameEngine {
         return false;
 
     }
+
     private boolean peekSecondRow(int column) {
         if (shuffledWords.get(column).state == WordState.COVERED) {
             shuffledWords.get(column).state = WordState.UNCOVERED;
@@ -77,30 +79,30 @@ public class GameEngine {
     }
 
     public void uncoverWordsIfGuessed() {
-        if(peekedWordFromFirstRow.word.equals(peekedWordFromSecondRow.word)){
+        if (peekedWordFromFirstRow.word.equals(peekedWordFromSecondRow.word)) {
             peekedWordFromFirstRow.state = WordState.GUESSED;
             peekedWordFromSecondRow.state = WordState.GUESSED;
-        }
-        else{
+        } else {
             peekedWordFromFirstRow.state = WordState.COVERED;
             peekedWordFromSecondRow.state = WordState.COVERED;
+            numOfTriesRemaining--;
         }
     }
 
-    public void endRound(){
-        numOfGuesses++;
+    public void endRound() {
         firstRowChosen = false;
         secondRowChosen = false;
         peekedWordFromFirstRow = null;
         peekedWordFromSecondRow = null;
     }
 
-    public boolean isGameOver(){
+    public boolean isGameOver() {
         return words.stream()
                 .allMatch(word -> word.state == WordState.GUESSED);
     }
-    public boolean isNumberOfGuessesExceeded(){
-        return numOfGuesses > numOfTries;
+
+    public boolean isNumberOfTriesExceeded() {
+        return numOfTriesRemaining <= 0;
     }
 
     public List<Word> getWords() {
@@ -111,8 +113,15 @@ public class GameEngine {
         return shuffledWords;
     }
 
-    public int getNumOfWords(){
+    public int getNumOfWords() {
         return numOfWords;
+    }
+
+    public int getNumOfTriesRemaining() {
+        return numOfTriesRemaining;
+    }
+    public String getLevel(){
+        return level;
     }
 
 }

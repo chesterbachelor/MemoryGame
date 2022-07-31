@@ -36,9 +36,9 @@ public class MemoryGame {
 
             switch (level) {
                 case "easy":
-                    return new GameEngine(4, 10, dictionary);
+                    return new GameEngine(4, 10, dictionary, "Easy");
                 case "hard":
-                    return new GameEngine(8, 15, dictionary);
+                    return new GameEngine(8, 15, dictionary, "Hard");
                 default:
                     printer.printIncorrectInputMessage();
             }
@@ -66,7 +66,7 @@ public class MemoryGame {
     private void gameLoop() {
         while (!engine.isGameOver()) {
 
-            if (engine.isNumberOfGuessesExceeded()) {
+            if (engine.isNumberOfTriesExceeded()) {
                 printer.printGameLostMessage();
                 return;
             }
