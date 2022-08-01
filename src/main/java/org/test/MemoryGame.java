@@ -7,9 +7,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MemoryGame {
-    Printer printer = new Printer();
-    GameEngine engine;
-    List<String> dictionary;
+    private final Printer printer = new Printer();
+    private GameEngine engine;
+    private final FileHandler fileHandler = new FileHandler();
+    private final List<String> dictionary;
 
     public MemoryGame(List<String> dictionary) {
         this.dictionary = dictionary;
@@ -21,7 +22,6 @@ public class MemoryGame {
         while (true) {
             printer.printChooseLevelMessage();
             engine = chooseLevel(dictionary);
-            engine.startTimer();
             gameLoop();
 
             if (!doYouWantToRetry()) {
@@ -33,7 +33,7 @@ public class MemoryGame {
     }
 
     private GameEngine chooseLevel(List<String> dictionary) {
-        Scanner scanner = new Scanner(System.in);
+        var scanner = new Scanner(System.in);
         while (true) {
             String level = scanner.nextLine().toLowerCase().trim();
 
@@ -67,13 +67,13 @@ public class MemoryGame {
     }
 
     private void gameLoop() {
+        engine.startTimer();
         while (!engine.isGameOver()) {
 
             if (engine.isNumberOfTriesExceeded()) {
-                printer.printGameLostMessage();
+                gameLost();
                 return;
             }
-
             printer.printBoard(engine);
             guessWordsLocations();
 
@@ -81,53 +81,58 @@ public class MemoryGame {
             engine.endRound();
         }
         engine.endTimer();
-        printer.printGameWonMessage(engine.getGameTime(),engine.getNumOfTriesToFinishGame());
-        HighScore newScore = createNewScore();
-        FileHandler fileHandler = new FileHandler();
+        gameWon();
+    }
+    private void gameLost(){
+        printer.printGameLostMessage();
         List<HighScore> highScores = loadHighScores(fileHandler);
+        printer.printHighScore(highScores);
+    }
 
+    private void gameWon() {
+        printer.printGameWonMessage(engine.getGameTime(), engine.getNumOfTriesToFinishGame());
+        HighScore newScore = createNewScore();
+
+        List<HighScore> updatedHighScores = updateHighScores(newScore);
+        printer.printHighScore(updatedHighScores);
+        saveHighScores(fileHandler, updatedHighScores);
+    }
+
+    private List<HighScore> updateHighScores(HighScore newScore) {
+        List<HighScore> highScores = loadHighScores(fileHandler);
         highScores.add(newScore);
-        List<HighScore> updatedHighScores = highScores.stream()
+        return highScores.stream()
                 .sorted()
                 .limit(10)
                 .collect(Collectors.toList());
-
-        printer.printHighScore(updatedHighScores);
-        saveHighScores(fileHandler,updatedHighScores);
-
     }
 
-    private HighScore createNewScore(){
+    private HighScore createNewScore() {
         printer.printAskUserForNameMessage();
-        Scanner scanner = new Scanner(System.in);
+        var scanner = new Scanner(System.in);
         String userName = scanner.nextLine().trim();
-        return new HighScore(userName, LocalDate.now(), engine.getGameTime(),engine.getNumOfTriesToFinishGame());
+        return new HighScore(userName, LocalDate.now(), engine.getGameTime(), engine.getNumOfTriesToFinishGame());
     }
-    private List<HighScore> loadHighScores(FileHandler fileHandler){
 
-        String filePath;
-        if(engine.getLevel().equalsIgnoreCase("easy")) {
-            filePath = "src/main/resources/HighScoresEasy.txt";
-        }
-        else {
-            filePath = "src/main/resources/HighScoresHard.txt";
-        }
+    private List<HighScore> loadHighScores(FileHandler fileHandler) {
+        String filePath = chooseHighScoreFilePath(engine.getLevel());
         return fileHandler.loadHighScores(filePath);
     }
-    private void saveHighScores(FileHandler fileHandler, List<HighScore> highScores){
-        String filePath;
-        if(engine.getLevel().equalsIgnoreCase("easy")) {
-            filePath = "src/main/resources/HighScoresEasy.txt";
-        }
-        else {
-            filePath = "src/main/resources/HighScoresHard.txt";
-        }
-        fileHandler.saveHighScores(filePath,highScores);
 
+    private void saveHighScores(FileHandler fileHandler, List<HighScore> highScores) {
+        String filePath = chooseHighScoreFilePath(engine.getLevel());
+        fileHandler.saveHighScores(filePath, highScores);
+    }
+
+    private String chooseHighScoreFilePath(String level) {
+        if (level.equalsIgnoreCase("easy"))
+            return "src/main/resources/HighScoresEasy.txt";
+
+        return "src/main/resources/HighScoresHard.txt";
     }
 
     private void guessWordsLocations() {
-        while (!(engine.secondRowChosen && engine.firstRowChosen)) {
+        while (!(engine.isFirstRowChosen() && engine.isSecondRowChosen())) {
             printer.printWordToFlipMessage();
 
             while (!engine.peek(getUserChoice())) {
@@ -138,7 +143,7 @@ public class MemoryGame {
     }
 
     private String getUserChoice() {
-        Scanner scanner = new Scanner(System.in);
+        var scanner = new Scanner(System.in);
 
         while (true) {
             String userChoice = scanner.nextLine().trim().toLowerCase();
@@ -162,10 +167,10 @@ public class MemoryGame {
     }
 
     private boolean validateRowChoice(char row) {
-        if (row == 'a' && engine.firstRowChosen) {
+        if (row == 'a' && engine.isFirstRowChosen()) {
             return false;
         }
-        if (row == 'b' && engine.secondRowChosen) {
+        if (row == 'b' && engine.isSecondRowChosen()) {
             return false;
         }
         return true;

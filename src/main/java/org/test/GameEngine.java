@@ -12,13 +12,12 @@ public class GameEngine {
     private final String level;
     private final List<Word> words;
     private final List<Word> shuffledWords;
-    Word peekedWordFromFirstRow;
-    Word peekedWordFromSecondRow;
-    public boolean firstRowChosen = false;
-    public boolean secondRowChosen = false;
-    Instant start;
-    Instant end;
-
+    private Word peekedWordFromFirstRow;
+    private Word peekedWordFromSecondRow;
+    private boolean firstRowChosen = false;
+    private boolean secondRowChosen = false;
+    private Instant start;
+    private Instant end;
 
     public GameEngine(int numOfWords, int numOfTries, List<String> dictionary, String level) {
         this.numOfWords = numOfWords;
@@ -148,4 +147,11 @@ public class GameEngine {
         return level;
     }
 
+    public boolean isFirstRowChosen() {
+        return firstRowChosen;
+    }
+
+    public boolean isSecondRowChosen() {
+        return secondRowChosen;
+    }
 }
